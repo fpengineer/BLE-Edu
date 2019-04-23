@@ -1,0 +1,1 @@
+BLE Education project using NRF52
