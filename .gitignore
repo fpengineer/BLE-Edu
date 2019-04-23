@@ -1,0 +1,5 @@
+Firmware/_build/
+Firmware/nRF/
+Firmware/RTE/
+Firmware/JLinkLog.txt
+Firmware/*.uvguix*
