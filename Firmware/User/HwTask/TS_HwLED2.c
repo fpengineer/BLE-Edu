@@ -10,11 +10,17 @@
 *******************************************************************************************************/
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
-#include "stdint.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+
+#include "nrf_gpio.h"
+
+#include "nrf_log.h"
+#include "nrf_log_ctrl.h"
+#include "nrf_log_default_backends.h"
 
 #include "HwAPI.h"
 
@@ -44,29 +50,28 @@ void vTask_HwLED2( void *pvParameters )
             case HW_LED_INIT:
             {
 				Init_LED_Hardware();
-				LED2_Off();
-				
+                nrf_gpio_pin_clear( LED2_PIN );
                 bootStatus_HwLED2 = HW_TASK_BOOT_PENDING;
                 break;
             }
 
             case HW_LED_ON:
             {
-                LED2_On();
+                nrf_gpio_pin_set( LED2_PIN );
                 timeout = portMAX_DELAY;
                 break;
             }
             
             case HW_LED_OFF:
             {
-				LED2_Off();
+                nrf_gpio_pin_clear( LED2_PIN );
                 timeout = portMAX_DELAY;
                 break;
             }
             
             case HW_LED_FLASH:
             {
-				LED2_Toggle();
+                nrf_gpio_pin_toggle( LED2_PIN );
                 timeout = hwLEDQueueData.delay_ms;
                 break;
             }                
@@ -91,7 +96,8 @@ void vTask_HwLED2( void *pvParameters )
 //*************************************************
 static void Init_LED_Hardware( void )
 {
-
+    nrf_gpio_cfg_output( LED2_PIN );
 }
+
 
 /* End of file */

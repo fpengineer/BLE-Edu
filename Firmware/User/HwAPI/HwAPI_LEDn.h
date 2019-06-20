@@ -12,20 +12,13 @@
 #include <stdint.h>
 #include <stdio.h>
 
+
 #include "HwAPI.h"
 
 
 // LED port/pin defines
-#define STATUS_LED_PORT   LED_PORT
-#define STATUS_LED_PIN    0
-
-// LED On/Off macro
-#define LED1_On()
-#define LED1_Off()
-#define LED1_Toggle()
-#define LED2_On()
-#define LED2_Off()
-#define LED2_Toggle()
+#define LED1_PIN    12
+#define LED2_PIN    12
 
 #define STATUS_LED_FLASH_SLOW		500 // delay in milliseconds
 #define STATUS_LED_FLASH_FAST		200 // delay in milliseconds
