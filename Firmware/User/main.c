@@ -84,6 +84,10 @@
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 
+#include "HwAPI.h"
+
+extern TaskHandle_t xTask_HwBoot;
+
 
 #define DEVICE_NAME                         "BLE_Edu"                               /**< Name of device. Will be included in the advertising data. */
 #define MANUFACTURER_NAME                   "MyCompanyLLC"                          /**< Manufacturer. Will be passed to Device Information Service. */
@@ -1000,6 +1004,13 @@ int main(void)
     // Create a FreeRTOS task for the BLE stack.
     // The task will run advertising_start() before entering its loop.
     nrf_sdh_freertos_init(advertising_start, &erase_bonds);
+
+    if( pdTRUE != xTaskCreate(  vTask_HwBoot,
+                                "Task - Hardware boot",
+                                configMINIMAL_STACK_SIZE, // check if additional stack needed
+                                NULL,
+                                tskIDLE_PRIORITY + 1,
+                                &xTask_HwBoot ) ) { APP_ERROR_HANDLER(NRF_ERROR_NO_MEM); }	
 
     NRF_LOG_INFO("HRS FreeRTOS example started.");
     // Start FreeRTOS scheduler.
