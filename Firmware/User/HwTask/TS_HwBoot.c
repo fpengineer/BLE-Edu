@@ -80,6 +80,7 @@ void vTask_HwBoot( void *pvParameters )
     if ( hwBootStatus_LED1 == HW_BOOT_SUCCESS && hwBootStatus_LED2 == HW_BOOT_SUCCESS )
     {
         hwBootData.hwBootStatus = HW_BOOT_SUCCESS;
+        HwAPI_LED1_On();
 #ifdef HWAPI_BOOT_DEBUG_INFO
         //HwAPI_Terminal_SendMessage( "HwBoot task complete\n" );
 #endif
@@ -87,6 +88,7 @@ void vTask_HwBoot( void *pvParameters )
     else if ( hwBootStatus_LED1 == HW_BOOT_ERROR || hwBootStatus_LED2 == HW_BOOT_ERROR )
     {
         hwBootData.hwBootStatus = HW_BOOT_ERROR;
+        HwAPI_LED1_Flash( STATUS_LED_FLASH_FAST );
 #ifdef HWAPI_BOOT_DEBUG_INFO
         //HwAPI_Terminal_SendMessage( "HwBoot task result: HW_BOOT_ERROR\n" );
 #endif
