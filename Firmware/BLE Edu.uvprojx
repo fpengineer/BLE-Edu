@@ -647,6 +647,16 @@
               <FileType>1</FileType>
               <FilePath>.\nRF\modules\nrfx\drivers\src\nrfx_uarte.c</FilePath>
             </File>
+            <File>
+              <FileName>nrfx_saadc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\nRF\modules\nrfx\drivers\src\nrfx_saadc.c</FilePath>
+            </File>
+            <File>
+              <FileName>nrfx_ppi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\nRF\modules\nrfx\drivers\src\nrfx_ppi.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -882,6 +892,11 @@
               <FileType>1</FileType>
               <FilePath>.\User\HwAPI\HwAPI_LEDn.c</FilePath>
             </File>
+            <File>
+              <FileName>HwAPI_Measure.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\HwAPI\HwAPI_Measure.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -901,6 +916,11 @@
               <FileName>TS_HwLED2.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\HwTask\TS_HwLED2.c</FilePath>
+            </File>
+            <File>
+              <FileName>TS_HwMeasure.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\HwTask\TS_HwMeasure.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1558,6 +1578,16 @@
               <FileType>1</FileType>
               <FilePath>.\nRF\modules\nrfx\drivers\src\nrfx_uarte.c</FilePath>
             </File>
+            <File>
+              <FileName>nrfx_saadc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\nRF\modules\nrfx\drivers\src\nrfx_saadc.c</FilePath>
+            </File>
+            <File>
+              <FileName>nrfx_ppi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\nRF\modules\nrfx\drivers\src\nrfx_ppi.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1793,6 +1823,11 @@
               <FileType>1</FileType>
               <FilePath>.\User\HwAPI\HwAPI_LEDn.c</FilePath>
             </File>
+            <File>
+              <FileName>HwAPI_Measure.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\HwAPI\HwAPI_Measure.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1812,6 +1847,11 @@
               <FileName>TS_HwLED2.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\HwTask\TS_HwLED2.c</FilePath>
+            </File>
+            <File>
+              <FileName>TS_HwMeasure.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\HwTask\TS_HwMeasure.c</FilePath>
             </File>
           </Files>
         </Group>
