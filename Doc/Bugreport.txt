@@ -1,0 +1,4 @@
+BLE education project
+Bugreport
+1. Application crashes after timeout expired in advertising process. Error ID is 16385.
+    Perhaps it is caused by debug mode enabled
