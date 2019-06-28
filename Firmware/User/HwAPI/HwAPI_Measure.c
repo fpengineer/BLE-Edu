@@ -49,7 +49,7 @@ HwAPI_Status_t HwAPI_Measure_Stop( void )
 
 
 //
-HwAPI_BootStatus_t HwAPI_DAQ_ADC_Run( void )
+HwAPI_BootStatus_t HwAPI_Measure_Run( void )
 {
     extern TaskHandle_t xTask_HwMeasure;
     extern QueueHandle_t xQueue_HwMeasure_Rx;
