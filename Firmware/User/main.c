@@ -1005,13 +1005,18 @@ int main(void)
     // The task will run advertising_start() before entering its loop.
     nrf_sdh_freertos_init(advertising_start, &erase_bonds);
 
+#if 0
     if( pdTRUE != xTaskCreate(  vTask_HwBoot,
                                 "Task - Hardware boot",
-                                configMINIMAL_STACK_SIZE, // check if additional stack needed
+                                configMINIMAL_STACK_SIZE + 3000, // check if additional stack needed
                                 NULL,
                                 tskIDLE_PRIORITY + 1,
-                                &xTask_HwBoot ) ) { APP_ERROR_HANDLER(NRF_ERROR_NO_MEM); }	
-
+                                &xTask_HwBoot ) )
+    { 
+        APP_ERROR_HANDLER(NRF_ERROR_NO_MEM);
+    }	
+    NRF_LOG_INFO("HwBoot thread created; free mem: %dB", xPortGetFreeHeapSize());
+#endif
     NRF_LOG_INFO("HRS FreeRTOS example started.");
     // Start FreeRTOS scheduler.
     vTaskStartScheduler();
