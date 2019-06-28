@@ -657,6 +657,11 @@
               <FileType>1</FileType>
               <FilePath>.\nRF\modules\nrfx\drivers\src\nrfx_ppi.c</FilePath>
             </File>
+            <File>
+              <FileName>nrfx_timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\nRF\modules\nrfx\drivers\src\nrfx_timer.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1587,6 +1592,11 @@
               <FileName>nrfx_ppi.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\nRF\modules\nrfx\drivers\src\nrfx_ppi.c</FilePath>
+            </File>
+            <File>
+              <FileName>nrfx_timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\nRF\modules\nrfx\drivers\src\nrfx_timer.c</FilePath>
             </File>
           </Files>
         </Group>
