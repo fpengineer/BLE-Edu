@@ -18,6 +18,7 @@
 
 #include "nrf_gpio.h"
 #include "nrf_drv_saadc.h"
+#include "nrf_drv_timer.h"
 
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
@@ -34,8 +35,18 @@ volatile HwAPI_BootStatus_t bootStatus_HwMeasure = HW_TASK_BOOT_IDLE;
 static void InitMeasureHardware( void );
 
 // Declare private variables
-#define SAMPLES_IN_BUFFER 1
-static nrf_saadc_value_t m_buffer[SAMPLES_IN_BUFFER];
+#define SAMPLES_IN_BUFFER 16
+static nrf_saadc_value_t     m_buffer_pool[2][SAMPLES_IN_BUFFER];
+static uint16_t valueTemperature_ADC = 0;
+static uint16_t valueVoltage_ADC = 0;
+static uint8_t statusADC = 0;
+static uint8_t statusPWM1 = 0;
+static uint8_t statusPWM2 = 0;
+static uint8_t statusRPM = 0;
+
+//static const nrf_drv_timer_t m_timer_PWM1 = NRF_DRV_TIMER_INSTANCE(0);
+//static const nrf_drv_timer_t m_timer_PWM2 = NRF_DRV_TIMER_INSTANCE(1);
+//static const nrf_drv_timer_t m_timer_RPM = NRF_DRV_TIMER_INSTANCE(2);
 
 
 void vTask_HwMeasure( void *pvParameters )
@@ -53,16 +64,34 @@ void vTask_HwMeasure( void *pvParameters )
             {
 				InitMeasureHardware();
                 bootStatus_HwMeasure = HW_TASK_BOOT_PENDING;
+
+                hwMeasureQueueData.stateHwMeasure = HW_MEASURE_TACT;            
+                xQueueSend( xQueue_HwMeasure_Rx, &hwMeasureQueueData, NULL ); 
+                NRF_LOG_INFO("HW_MEASURE_INIT complete.\n");
                 break;
             }
 
             case HW_MEASURE_TACT:
             {
+                NRF_LOG_INFO("HW_MEASURE_TACT start.\n");
                 // Perform measure
-                nrfx_saadc_sample();
+                statusADC = 0;
+                statusPWM1 = 0;
+                statusPWM2 = 0;
+                statusRPM = 0;
+
+                nrf_drv_saadc_sample();
+                //nrf_drv_timer_enable(&m_timer_PWM1);
+                //nrf_drv_timer_enable(&m_timer_PWM1);
+                //nrf_drv_timer_enable(&m_timer_RPM);
+                
+                
+                // Wait for measure complete
+                while( !statusADC || !statusPWM1 || !statusPWM2 || !statusRPM ){;}
                 
                 hwMeasureQueueData.stateHwMeasure = HW_MEASURE_TACT;            
                 xQueueSend( xQueue_HwMeasure_Rx, &hwMeasureQueueData, NULL ); 
+                NRF_LOG_INFO("HW_MEASURE_START complete.\n");
                 vTaskDelay( MEASURE_TACT_MS );
                 break;
             }
@@ -103,10 +132,27 @@ void saadc_callback(nrf_drv_saadc_evt_t const * p_event)
         err_code = nrf_drv_saadc_buffer_convert(p_event->data.done.p_buffer, SAMPLES_IN_BUFFER);
         APP_ERROR_CHECK(err_code);
         
-        NRF_LOG_INFO("%d\r\n", p_event->data.done.p_buffer[0]);
+        valueTemperature_ADC = 0;
+        valueVoltage_ADC = 0;
+        for (int32_t i = 0; i < (SAMPLES_IN_BUFFER / 2); i++)
+        {
+            valueTemperature_ADC += p_event->data.done.p_buffer[i * 2];
+            valueVoltage_ADC += p_event->data.done.p_buffer[(i * 2) + 1];
+        }
+        valueTemperature_ADC /= (SAMPLES_IN_BUFFER / 2);
+        valueVoltage_ADC /= (SAMPLES_IN_BUFFER / 2);
+    
+        statusADC = 1;
+        
+        NRF_LOG_INFO("SAADC handler.\n");
     }
 }
 
+
+void timer_handler(nrf_timer_event_t event_type, void * p_context)
+{
+    //NRF_LOG_INFO("Timer handler.\n");
+}
 
 
 //*************************************************
@@ -118,26 +164,57 @@ void saadc_callback(nrf_drv_saadc_evt_t const * p_event)
 //*************************************************
 static void InitMeasureHardware( void )
 {
-    // Init ADC to measure voltage
+    // Init ADC to measure voltage and temperature
     ret_code_t err_code;
-    nrf_saadc_channel_config_t channel_config 
-        = NRF_DRV_SAADC_DEFAULT_CHANNEL_CONFIG_SE(NRF_SAADC_INPUT_AIN0);
+    nrf_saadc_channel_config_t channel_temperature_config 
+        = NRF_DRV_SAADC_DEFAULT_CHANNEL_CONFIG_SE(TEMPERATURE_ANALOG_IN);
+
+    nrf_saadc_channel_config_t channel_voltage_config 
+        = NRF_DRV_SAADC_DEFAULT_CHANNEL_CONFIG_SE(VOLTAGE_ANALOG_IN);
 
     err_code = nrf_drv_saadc_init(NULL, saadc_callback);
     APP_ERROR_CHECK(err_code);
 
-    err_code = nrf_drv_saadc_channel_init(0, &channel_config);
+    err_code = nrfx_saadc_calibrate_offset();
+    APP_ERROR_CHECK(err_code);
+    
+    while(nrfx_saadc_is_busy()) // Wait for calibration to complete
+    {
+        __WFE();    //
+        __SEV();    //
+        __WFE();    // This sequence puts the system to sleep (SystemON) while waiting
+    }
+
+    err_code = nrf_drv_saadc_channel_init(TEMPERATURE_PIN, &channel_temperature_config);
     APP_ERROR_CHECK(err_code);
 
-    err_code = nrf_drv_saadc_buffer_convert(m_buffer, SAMPLES_IN_BUFFER);
+    err_code = nrf_drv_saadc_channel_init(VOLTAGE_PIN, &channel_voltage_config);
     APP_ERROR_CHECK(err_code);
 
-    
-    
-    
-    // Init ADC to measure Temperature
+    err_code = nrf_drv_saadc_buffer_convert(m_buffer_pool[0], SAMPLES_IN_BUFFER);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = nrf_drv_saadc_buffer_convert(m_buffer_pool[1], SAMPLES_IN_BUFFER);
+    APP_ERROR_CHECK(err_code);
+
+/*    
     // Init timer to measure PWM1
+    nrf_drv_timer_config_t timer_cfg = NRF_DRV_TIMER_DEFAULT_CONFIG;
+    timer_cfg.bit_width = NRF_TIMER_BIT_WIDTH_32;
+    err_code = nrf_drv_timer_init(&m_timer, &timer_cfg, timer_handler);
+    APP_ERROR_CHECK(err_code);
+
+    uint32_t time_ticks = nrf_drv_timer_ms_to_ticks(&m_timer, 500);
+
+    nrf_drv_timer_extended_compare(
+         &m_timer, NRF_TIMER_CC_CHANNEL0, time_ticks, NRF_TIMER_SHORT_COMPARE0_CLEAR_MASK, true);
+
+//    nrf_drv_timer_enable(&m_timer);
+
+
     // Init timer to measure PWM2
+*/
+
     // Init timer to measure RPM pulses
 }
 

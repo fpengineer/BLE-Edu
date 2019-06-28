@@ -16,6 +16,12 @@
 
 #include "HwAPI.h"
 
+#define TEMPERATURE_ANALOG_IN       NRF_SAADC_INPUT_AIN0
+#define VOLTAGE_ANALOG_IN           NRF_SAADC_INPUT_AIN1
+
+#define TEMPERATURE_PIN             0
+#define VOLTAGE_PIN                 1
+
 #define MEASURE_TACT_MS     250
 
 /* Exported types ------------------------------------------------------------*/
