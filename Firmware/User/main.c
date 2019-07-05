@@ -170,9 +170,7 @@ static TimerHandle_t m_sensor_contact_timer;                        /**< Definit
 #if NRF_LOG_ENABLED
 static TaskHandle_t m_logger_thread;                                /**< Definition of Logger thread. */
 #endif
-static TaskHandle_t m_led_thread;                                   /**< Definition of LED thread. */
-static TaskHandle_t m_debug_thread;                                 /**< Definition of debug thread. */
-//extern TaskHandle_t xTask_HwBoot;
+extern TaskHandle_t xTask_HwBoot;
 
 static void advertising_start(void * p_erase_bonds);
 
@@ -934,52 +932,6 @@ static void clock_init(void)
 }
 
 
-/**@brief Thread for the LED.
- *
- * @details 
- *
- * @param[in]   arg   Pointer used for passing some arbitrary information (context) from the
- *                    osThreadCreate() call to the thread.
- */
-static void my_led_thread(void * arg)
-{
-    UNUSED_PARAMETER(arg);
-    NRF_LOG_INFO("TS_LED thread started.");
-
-    nrf_gpio_cfg_output(12);
-    nrf_gpio_pin_set(12);
-
-    while (1)
-    {
-        //NRF_LOG_INFO("LED thread toggled.");
-        nrf_gpio_pin_toggle(12);
-        vTaskDelay(500);
-    }
-}
-
-
-/**@brief Thread for the debug.
- *
- * @details 
- *
- * @param[in]   arg   Pointer used for passing some arbitrary information (context) from the
- *                    osThreadCreate() call to the thread.
- */
-
-static void my_debug_thread(void * arg)
-{
-    UNUSED_PARAMETER(arg);
-    
-    
-    NRF_LOG_INFO("TS_Debug thread started.");
-
-    while (1)
-    {
-
-    }
-}
-
-
 /**@brief Function for application main entry.
  */
 int main(void)
@@ -993,34 +945,15 @@ int main(void)
     // Do not start any interrupt that uses system functions before system initialisation.
     // The best solution is to start the OS before any other initalisation.
 
-    //NRF_LOG_INFO("My message");
-    //nrf_gpio_cfg_output(12);
-    //while(1){nrf_gpio_pin_toggle(12); nrf_delay_ms(500);}
-
-	
-	
-	#if NRF_LOG_ENABLED
+#if NRF_LOG_ENABLED
     // Start execution.
     if (pdPASS != xTaskCreate(logger_thread, "LOGGER", 256, NULL, 1, &m_logger_thread))
     {
         APP_ERROR_HANDLER(NRF_ERROR_NO_MEM);
     }
+    NRF_LOG_INFO("***************************************");
     NRF_LOG_INFO("Logger thread created; free mem: %dB", xPortGetFreeHeapSize());
 #endif
-
-    if (pdPASS != xTaskCreate(my_led_thread, "LED task", 256, NULL, 1, &m_led_thread))
-    {
-        APP_ERROR_HANDLER(NRF_ERROR_NO_MEM);
-    }
-    NRF_LOG_INFO("LED thread created; free mem: %dB", xPortGetFreeHeapSize());
-
-		/*
-    if (pdPASS != xTaskCreate(my_debug_thread, "Debug task", 256, NULL, 1, &m_debug_thread))
-    {
-        APP_ERROR_HANDLER(NRF_ERROR_NO_MEM);
-    }
-    NRF_LOG_INFO("Debug thread created; free mem: %dB", xPortGetFreeHeapSize());
-*/
 
     // Activate deep sleep mode.
     SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
@@ -1045,10 +978,10 @@ int main(void)
     // The task will run advertising_start() before entering its loop.
     nrf_sdh_freertos_init(advertising_start, &erase_bonds);
 
-#if 0
+#if 1
     if( pdTRUE != xTaskCreate(  vTask_HwBoot,
                                 "Task - Hardware boot",
-                                configMINIMAL_STACK_SIZE + 3000, // check if additional stack needed
+                                configMINIMAL_STACK_SIZE, // check if additional stack needed
                                 NULL,
                                 tskIDLE_PRIORITY + 1,
                                 &xTask_HwBoot ) )
@@ -1057,7 +990,7 @@ int main(void)
     }	
     NRF_LOG_INFO("HwBoot thread created; free mem: %dB", xPortGetFreeHeapSize());
 #endif
-    NRF_LOG_INFO("HRS FreeRTOS example started.");
+    NRF_LOG_INFO("BLE_Edu started.");
     // Start FreeRTOS scheduler.
     vTaskStartScheduler();
 
