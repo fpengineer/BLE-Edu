@@ -15,7 +15,7 @@
 #include "HwAPI.h"
 
 // define HWAPI_DEBUG_INFO to allow debug info messages into terminal
-//#define HWAPI_BOOT_DEBUG_INFO
+#define HWAPI_BOOT_DEBUG_INFO
 
 /* Exported types ------------------------------------------------------------*/
 typedef enum {
