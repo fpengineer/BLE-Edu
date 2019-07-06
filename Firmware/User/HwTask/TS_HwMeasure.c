@@ -62,18 +62,17 @@ void vTask_HwMeasure( void *pvParameters )
         {
             case HW_MEASURE_INIT:
             {
-				InitMeasureHardware();
+				//InitMeasureHardware();
                 bootStatus_HwMeasure = HW_TASK_BOOT_PENDING;
 
-                hwMeasureQueueData.stateHwMeasure = HW_MEASURE_TACT;            
-                xQueueSend( xQueue_HwMeasure_Rx, &hwMeasureQueueData, NULL ); 
-                NRF_LOG_INFO("HW_MEASURE_INIT complete.\n");
+                //hwMeasureQueueData.stateHwMeasure = HW_MEASURE_TACT;            
+                //xQueueSend( xQueue_HwMeasure_Rx, &hwMeasureQueueData, NULL ); 
                 break;
             }
 
             case HW_MEASURE_TACT:
             {
-                NRF_LOG_INFO("HW_MEASURE_TACT start.\n");
+                //HwAPI_Log_Info( "HW_MEASURE_TACT start" );
                 // Perform measure
                 statusADC = 0;
                 statusPWM1 = 0;
@@ -91,7 +90,7 @@ void vTask_HwMeasure( void *pvParameters )
                 
                 hwMeasureQueueData.stateHwMeasure = HW_MEASURE_TACT;            
                 xQueueSend( xQueue_HwMeasure_Rx, &hwMeasureQueueData, NULL ); 
-                NRF_LOG_INFO("HW_MEASURE_START complete.\n");
+                //HwAPI_Log_Info( "HW_MEASURE_START complete" );
                 vTaskDelay( MEASURE_TACT_MS );
                 break;
             }

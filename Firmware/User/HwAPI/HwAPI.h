@@ -18,6 +18,7 @@
 #include "HwAPI Config.h"
 
 #include "HwAPI_Boot.h"
+#include "HwAPI_Log.h"
 #include "HwAPI_LEDn.h"
 #include "HwAPI_Measure.h"
 //#include "HwAPI_FileManager.h"

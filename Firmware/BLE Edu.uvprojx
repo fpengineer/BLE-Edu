@@ -310,7 +310,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>4</Optim>
+            <Optim>1</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -893,6 +893,11 @@
               <FilePath>.\User\HwAPI\HwAPI_Boot.c</FilePath>
             </File>
             <File>
+              <FileName>HwAPI_Log.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\HwAPI\HwAPI_Log.c</FilePath>
+            </File>
+            <File>
               <FileName>HwAPI_LEDn.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\HwAPI\HwAPI_LEDn.c</FilePath>
@@ -911,6 +916,11 @@
               <FileName>TS_HwBoot.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\HwTask\TS_HwBoot.c</FilePath>
+            </File>
+            <File>
+              <FileName>TS_HwLog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\HwTask\TS_HwLog.c</FilePath>
             </File>
             <File>
               <FileName>TS_HwLED1.c</FileName>
@@ -1829,6 +1839,11 @@
               <FilePath>.\User\HwAPI\HwAPI_Boot.c</FilePath>
             </File>
             <File>
+              <FileName>HwAPI_Log.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\HwAPI\HwAPI_Log.c</FilePath>
+            </File>
+            <File>
               <FileName>HwAPI_LEDn.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\HwAPI\HwAPI_LEDn.c</FilePath>
@@ -1847,6 +1862,11 @@
               <FileName>TS_HwBoot.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\HwTask\TS_HwBoot.c</FilePath>
+            </File>
+            <File>
+              <FileName>TS_HwLog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\HwTask\TS_HwLog.c</FilePath>
             </File>
             <File>
               <FileName>TS_HwLED1.c</FileName>

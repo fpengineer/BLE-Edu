@@ -38,7 +38,7 @@ static void Init_LED_Hardware( void );
 void vTask_HwLED2( void *pvParameters )
 {
     HwLEDQueueData_t hwLEDQueueData;
-    TickType_t timeout = 0;
+    TickType_t timeout = portMAX_DELAY;
     
     hwLEDQueueData.stateHwLED = HW_LED_INIT;            
     xQueueSend( xQueue_HwLED2_Rx, &hwLEDQueueData, NULL ); 
