@@ -20,9 +20,9 @@
 #include "nrf_drv_saadc.h"
 #include "nrf_drv_timer.h"
 
+#define NRF_LOG_MODULE_NAME TS_HwMeasure
 #include "nrf_log.h"
-#include "nrf_log_ctrl.h"
-#include "nrf_log_default_backends.h"
+NRF_LOG_MODULE_REGISTER();
 
 #include "HwAPI.h"
 
@@ -53,8 +53,10 @@ void vTask_HwMeasure( void *pvParameters )
 {
     HwMeasureQueueData_t hwMeasureQueueData;
     
-    hwMeasureQueueData.stateHwMeasure = HW_MEASURE_INIT;            
-    xQueueSend( xQueue_HwMeasure_Rx, &hwMeasureQueueData, NULL ); 
+    NRF_LOG_INFO("HwMeasure: thread started");
+
+    hwMeasureQueueData.stateHwMeasure = HW_MEASURE_INIT;
+    xQueueSend( xQueue_HwMeasure_Rx, &hwMeasureQueueData, NULL );
 	while ( 1 )
 	{
         xQueueReceive( xQueue_HwMeasure_Rx, &hwMeasureQueueData, portMAX_DELAY );
@@ -67,31 +69,33 @@ void vTask_HwMeasure( void *pvParameters )
 
                 //hwMeasureQueueData.stateHwMeasure = HW_MEASURE_TACT;            
                 //xQueueSend( xQueue_HwMeasure_Rx, &hwMeasureQueueData, NULL ); 
+                NRF_LOG_INFO("HwMeasure: HW_MEASURE_INIT complete");
                 break;
             }
 
             case HW_MEASURE_TACT:
             {
-                //HwAPI_Log_Info( "HW_MEASURE_TACT start" );
+                NRF_LOG_INFO("HW_MEASURE_TACT start");
                 // Perform measure
-                statusADC = 0;
-                statusPWM1 = 0;
-                statusPWM2 = 0;
-                statusRPM = 0;
+                //statusADC = 0;
+                //statusPWM1 = 0;
+                //statusPWM2 = 0;
+                //statusRPM = 0;
 
-                nrf_drv_saadc_sample();
+                //nrf_drv_saadc_sample();
                 //nrf_drv_timer_enable(&m_timer_PWM1);
                 //nrf_drv_timer_enable(&m_timer_PWM1);
                 //nrf_drv_timer_enable(&m_timer_RPM);
                 
                 
                 // Wait for measure complete
-                while( !statusADC || !statusPWM1 || !statusPWM2 || !statusRPM ){;}
+                //while( !statusADC || !statusPWM1 || !statusPWM2 || !statusRPM ){;}
+                //while( !statusADC ){;}
                 
                 hwMeasureQueueData.stateHwMeasure = HW_MEASURE_TACT;            
                 xQueueSend( xQueue_HwMeasure_Rx, &hwMeasureQueueData, NULL ); 
-                //HwAPI_Log_Info( "HW_MEASURE_START complete" );
                 vTaskDelay( MEASURE_TACT_MS );
+                NRF_LOG_INFO("HW_MEASURE_TACT complete");
                 break;
             }
             
@@ -143,7 +147,7 @@ void saadc_callback(nrf_drv_saadc_evt_t const * p_event)
     
         statusADC = 1;
         
-        NRF_LOG_INFO("SAADC handler.\n");
+        NRF_LOG_INFO("SAADC handler.");
     }
 }
 
