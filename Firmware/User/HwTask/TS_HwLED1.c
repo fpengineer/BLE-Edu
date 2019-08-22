@@ -54,7 +54,6 @@ void vTask_HwLED1( void *pvParameters )
 				Init_LED_Hardware();
                 nrf_gpio_pin_clear( LED1_PIN );
                 bootStatus_HwLED1 = HW_TASK_BOOT_PENDING;
-                NRF_LOG_INFO("HwLED1: HW_LED_INIT complete");
                 break;
             }
 
