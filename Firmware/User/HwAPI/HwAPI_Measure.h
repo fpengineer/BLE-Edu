@@ -16,13 +16,16 @@
 
 #include "HwAPI.h"
 
-#define TEMPERATURE_ANALOG_IN       NRF_SAADC_INPUT_AIN0
-#define VOLTAGE_ANALOG_IN           NRF_SAADC_INPUT_AIN1
+#define TEMPERATURE_ANALOG_IN       NRF_SAADC_INPUT_AIN2
+#define VOLTAGE_ANALOG_IN           NRF_SAADC_INPUT_AIN6
 
-#define TEMPERATURE_PIN             0
-#define VOLTAGE_PIN                 1
+#define TEMPERATURE_PIN             4
+#define VOLTAGE_PIN                 30
+#define PWM1_PIN                    8
+#define PWM2_PIN                    0
+#define RPM_PIN                     7
 
-#define MEASURE_TACT_MS     250
+#define MEASURE_TACT_MS     5000
 
 /* Exported types ------------------------------------------------------------*/
 enum stateHwMeasure {
