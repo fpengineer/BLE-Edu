@@ -59,7 +59,7 @@ HwAPI_BootStatus_t HwAPI_Measure_Run( void )
 
 	if( pdTRUE != xTaskCreate(  vTask_HwMeasure,
                                 "Task - HwMeasure",
-                                configMINIMAL_STACK_SIZE,
+                                configMINIMAL_STACK_SIZE + 500,
                                 NULL,
                                 tskIDLE_PRIORITY + 1,
                                 &xTask_HwMeasure ) ) { /* some error action */ }	

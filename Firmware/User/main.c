@@ -57,8 +57,7 @@
 #include "ble_srv_common.h"
 #include "ble_advdata.h"
 #include "ble_advertising.h"
-#include "ble_bas.h"
-#include "ble_hrs.h"
+#include "ble_nus.h"
 #include "ble_dis.h"
 #include "ble_conn_params.h"
 #include "sensorsim.h"
@@ -85,34 +84,19 @@
 #include "nrf_log_default_backends.h"
 
 #include "HwAPI.h"
+#include "bleAPI.h"
 
 extern TaskHandle_t xTask_HwBoot;
 
 #define DEVICE_NAME                         "BLE_Edu"                               /**< Name of device. Will be included in the advertising data. */
 #define MANUFACTURER_NAME                   "MyCompanyLLC"                          /**< Manufacturer. Will be passed to Device Information Service. */
+#define NUS_SERVICE_UUID_TYPE           BLE_UUID_TYPE_VENDOR_BEGIN                  /**< UUID type for the Nordic UART Service (vendor specific). */
 
 #define APP_BLE_OBSERVER_PRIO               3                                       /**< Application's BLE observer priority. You shouldn't need to modify this value. */
 #define APP_BLE_CONN_CFG_TAG                1                                       /**< A tag identifying the SoftDevice BLE configuration. */
 
 #define APP_ADV_INTERVAL                    300                                     /**< The advertising interval (in units of 0.625 ms. This value corresponds to 187.5 ms). */
 #define APP_ADV_DURATION                    18000                                       /**< The advertising duration (180 seconds) in units of 10 milliseconds. */
-
-#define BATTERY_LEVEL_MEAS_INTERVAL         2000                                    /**< Battery level measurement interval (ms). */
-#define MIN_BATTERY_LEVEL                   81                                      /**< Minimum simulated battery level. */
-#define MAX_BATTERY_LEVEL                   100                                     /**< Maximum simulated battery level. */
-#define BATTERY_LEVEL_INCREMENT             1                                       /**< Increment between each simulated battery level measurement. */
-
-#define HEART_RATE_MEAS_INTERVAL            1000                                    /**< Heart rate measurement interval (ms). */
-#define MIN_HEART_RATE                      140                                     /**< Minimum heart rate as returned by the simulated measurement function. */
-#define MAX_HEART_RATE                      300                                     /**< Maximum heart rate as returned by the simulated measurement function. */
-#define HEART_RATE_INCREMENT                10                                      /**< Value by which the heart rate is incremented/decremented for each call to the simulated measurement function. */
-
-#define RR_INTERVAL_INTERVAL                300                                     /**< RR interval interval (ms). */
-#define MIN_RR_INTERVAL                     100                                     /**< Minimum RR interval as returned by the simulated measurement function. */
-#define MAX_RR_INTERVAL                     500                                     /**< Maximum RR interval as returned by the simulated measurement function. */
-#define RR_INTERVAL_INCREMENT               1                                       /**< Value by which the RR interval is incremented/decremented for each call to the simulated measurement function. */
-
-#define SENSOR_CONTACT_DETECTED_INTERVAL    5000                                    /**< Sensor Contact Detected toggle interval (ms). */
 
 #define MIN_CONN_INTERVAL                   MSEC_TO_UNITS(400, UNIT_1_25_MS)        /**< Minimum acceptable connection interval (0.4 seconds). */
 #define MAX_CONN_INTERVAL                   MSEC_TO_UNITS(650, UNIT_1_25_MS)        /**< Maximum acceptable connection interval (0.65 second). */
@@ -136,16 +120,21 @@ extern TaskHandle_t xTask_HwBoot;
 
 #define OSTIMER_WAIT_FOR_QUEUE              2                                       /**< Number of ticks to wait for the timer queue to be ready */
 
+#define UART_TX_BUF_SIZE                256                                         /**< UART TX buffer size. */
+#define UART_RX_BUF_SIZE                256                                         /**< UART RX buffer size. */
 
+BLE_NUS_DEF(m_nus, NRF_SDH_BLE_TOTAL_LINK_COUNT);                                   /**< BLE NUS service instance. */
 NRF_BLE_GATT_DEF(m_gatt);                                           /**< GATT module instance. */
 NRF_BLE_QWR_DEF(m_qwr);                                             /**< Context for the Queued Write module.*/
 BLE_ADVERTISING_DEF(m_advertising);                                 /**< Advertising module instance. */
 
 static uint16_t m_conn_handle         = BLE_CONN_HANDLE_INVALID;    /**< Handle of the current connection. */
+//static uint16_t   m_ble_nus_max_data_len = BLE_GATT_ATT_MTU_DEFAULT - 3;  /**< Maximum length of data (in bytes) that can be transmitted to the peer by the Nordic UART service module. */
 
 
 static ble_uuid_t m_adv_uuids[] =                                   /**< Universally unique service identifiers. */
 {
+    {BLE_UUID_NUS_SERVICE, BLE_UUID_TYPE_BLE},
     {BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE}
 };
 
@@ -153,7 +142,6 @@ static ble_uuid_t m_adv_uuids[] =                                   /**< Univers
 #if NRF_LOG_ENABLED
 static TaskHandle_t m_logger_thread;                                /**< Definition of Logger thread. */
 #endif
-static TaskHandle_t led_thread;                                  /**< Definition of Led thread. */
 static TaskHandle_t info_thread;                                 /**< Definition of info thread. */
 
 static void advertising_start(void * p_erase_bonds);
@@ -217,7 +205,7 @@ static void gap_params_init(void)
                                           strlen(DEVICE_NAME));
     APP_ERROR_CHECK(err_code);
 
-    err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_HEART_RATE_SENSOR_HEART_RATE_BELT);
+    err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN);
     APP_ERROR_CHECK(err_code);
 
     memset(&gap_conn_params, 0, sizeof(gap_conn_params));
@@ -253,6 +241,67 @@ static void nrf_qwr_error_handler(uint32_t nrf_error)
 }
 
 
+
+/**@brief Function for handling the data from the Nordic UART Service.
+ *
+ * @details This function will process the data received from the Nordic UART BLE Service and send
+ *          it to the UART module.
+ *
+ * @param[in] p_evt       Nordic UART Service event.
+ */
+/**@snippet [Handling the data received over BLE] */
+static void nus_data_handler(ble_nus_evt_t * p_evt)
+{
+
+    if (p_evt->type == BLE_NUS_EVT_RX_DATA)
+    {
+        //uint32_t err_code;
+
+        //NRF_LOG_DEBUG("Received data from BLE NUS. Writing data on UART.");
+        //NRF_LOG_HEXDUMP_DEBUG(p_evt->params.rx_data.p_data, p_evt->params.rx_data.length);
+/*
+        for (uint32_t i = 0; i < p_evt->params.rx_data.length; i++)
+        {
+            do
+            {
+                err_code = app_uart_put(p_evt->params.rx_data.p_data[i]);
+                if ((err_code != NRF_SUCCESS) && (err_code != NRF_ERROR_BUSY))
+                {
+                    NRF_LOG_ERROR("Failed receiving NUS message. Error 0x%x. ", err_code);
+                    APP_ERROR_CHECK(err_code);
+                }
+            } while (err_code == NRF_ERROR_BUSY);
+        }
+        if (p_evt->params.rx_data.p_data[p_evt->params.rx_data.length - 1] == '\r')
+        {
+            while (app_uart_put('\n') == NRF_ERROR_BUSY);
+        }
+*/
+    }
+}
+
+
+/**@brief Function to send data via Nordic UART Service.
+ *
+ * @details This function send message via Nordic UART BLE Service
+ *
+ * @param[in] message       Message to send.
+ */
+void SendMessageNUS(const char *message, ...)
+{
+	char buffer[256] = {""};
+    uint16_t length = 0;
+	va_list args;
+    va_start(args, message);
+
+    vsprintf (buffer, message, args);
+    length = strlen(buffer);
+
+    ble_nus_data_send(&m_nus, (uint8_t *)buffer, &length, m_conn_handle);
+
+	va_end (args);
+}
+
 /**@brief Function for initializing services that will be used by the application.
  *
  * @details Initialize the Heart Rate, Battery and Device Information services.
@@ -260,11 +309,9 @@ static void nrf_qwr_error_handler(uint32_t nrf_error)
 static void services_init(void)
 {
     ret_code_t         err_code;
-    //ble_hrs_init_t     hrs_init;
-    //ble_bas_init_t     bas_init;
+    ble_nus_init_t     nus_init;
     ble_dis_init_t     dis_init;
     nrf_ble_qwr_init_t qwr_init = {0};
-    //uint8_t            body_sensor_location;
 
     // Initialize Queued Write Module.
     qwr_init.error_handler = nrf_qwr_error_handler;
@@ -272,39 +319,15 @@ static void services_init(void)
     err_code = nrf_ble_qwr_init(&m_qwr, &qwr_init);
     APP_ERROR_CHECK(err_code);
 
-#if 0
-    // Initialize Heart Rate Service.
-    body_sensor_location = BLE_HRS_BODY_SENSOR_LOCATION_FINGER;
+    // Initialize Nordic UART Service.
+    memset(&nus_init, 0, sizeof(nus_init));
 
-    memset(&hrs_init, 0, sizeof(hrs_init));
+    nus_init.data_handler = nus_data_handler;
 
-    hrs_init.evt_handler                 = NULL;
-    hrs_init.is_sensor_contact_supported = true;
-    hrs_init.p_body_sensor_location      = &body_sensor_location;
-
-    // Here the sec level for the Heart Rate Service can be changed/increased.
-    hrs_init.hrm_cccd_wr_sec = SEC_OPEN;
-    hrs_init.bsl_rd_sec      = SEC_OPEN;
-
-    err_code = ble_hrs_init(&m_hrs, &hrs_init);
+    err_code = ble_nus_init(&m_nus, &nus_init);
     APP_ERROR_CHECK(err_code);
 
-    // Initialize Battery Service.
-    memset(&bas_init, 0, sizeof(bas_init));
 
-    // Here the sec level for the Battery Service can be changed/increased.
-    bas_init.bl_rd_sec        = SEC_OPEN;
-    bas_init.bl_cccd_wr_sec   = SEC_OPEN;
-    bas_init.bl_report_rd_sec = SEC_OPEN;
-
-    bas_init.evt_handler          = NULL;
-    bas_init.support_notification = true;
-    bas_init.p_report_ref         = NULL;
-    bas_init.initial_batt_level   = 100;
-
-    err_code = ble_bas_init(&m_bas, &bas_init);
-    APP_ERROR_CHECK(err_code);
-#endif
     // Initialize Device Information Service.
     memset(&dis_init, 0, sizeof(dis_init));
 
@@ -650,38 +673,10 @@ static void clock_init(void)
 }
 
 
-
-
-/**@brief Thread for led.
- *
- * @details This thread is responsible for processing log entries if logs are deferred.
- *          Thread flushes all log entries and suspends. It is resumed by idle task hook.
- *
- * @param[in]   arg   Pointer used for passing some arbitrary information (context) from the
- *                    osThreadCreate() call to the thread.
- */
-static void my_led_thread(void * arg)
-{
-    //UNUSED_PARAMETER(arg);
-
-    //NRF_LOG_INFO("my_led_thread enter");
-
-    //nrf_gpio_cfg_output( 12 );
-
-    while (1)
-    {
-        //nrf_gpio_pin_toggle( 12 );
-        vTaskDelay( 1000 );
-        //NRF_LOG_INFO("my_led_thread toggle");
-    }
-}
-
-
-
 /**@brief Thread for info.
  *
- * @details This thread is responsible for processing log entries if logs are deferred.
- *          Thread flushes all log entries and suspends. It is resumed by idle task hook.
+ * @details This thread is used to proprly start HwBoot task. HwBoot task do not starts
+ *          without this thread
  *
  * @param[in]   arg   Pointer used for passing some arbitrary information (context) from the
  *                    osThreadCreate() call to the thread.
@@ -690,29 +685,19 @@ static void my_info_thread(void * arg)
 {
     //UNUSED_PARAMETER(arg);
 
-    NRF_LOG_INFO("my_info_thread started");
-
-    //vTaskDelay( 500 );
-
     while (1)
     {
         vTaskDelay( 10 );
-        //vTaskSuspend( info_thread );
-        //NRF_LOG_INFO("my_info_thread toggle");
     }
 }
 
 
-
-
-
-
 /**@brief Function for application main entry.
  */
-static bool erase_bonds = 0;
+//static bool erase_bonds = 0;
 int main(void)
 {
-//    bool erase_bonds = 0;
+    bool erase_bonds = 0;
 
     // Initialize modules.
     log_init();

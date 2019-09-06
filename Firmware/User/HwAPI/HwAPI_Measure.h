@@ -19,13 +19,21 @@
 #define TEMPERATURE_ANALOG_IN       NRF_SAADC_INPUT_AIN2
 #define VOLTAGE_ANALOG_IN           NRF_SAADC_INPUT_AIN6
 
-#define TEMPERATURE_PIN             4
-#define VOLTAGE_PIN                 30
+//#define TEMPERATURE_PIN             4
+//#define VOLTAGE_PIN                 30
 #define PWM1_PIN                    8
 #define PWM2_PIN                    0
 #define RPM_PIN                     7
 
 #define MEASURE_TACT_MS     5000
+
+#define ADC_COUNT     4096.0f
+#define ADC_GAIN      6.0f
+#define ADC_VREF      0.6f
+#define AD8495_VREF   1.24f
+#define AD8495_RATIO  0.005f
+
+#define TIMER_CLOCK     15.72f // Why? Should be 16.0 MHz
 
 /* Exported types ------------------------------------------------------------*/
 enum stateHwMeasure {

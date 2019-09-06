@@ -26,12 +26,14 @@
 #include "app_timer.h"
 #include "nrf_ppi.h"
 #include "nrf_drv_ppi.h"
+#include "nrf_drv_clock.h"
 
 #define NRF_LOG_MODULE_NAME TS_HwMeasure
 #include "nrf_log.h"
 NRF_LOG_MODULE_REGISTER();
 
 #include "HwAPI.h"
+#include "bleAPI.h"
 
 TaskHandle_t xTask_HwMeasure;
 QueueHandle_t xQueue_HwMeasure_Rx;
@@ -54,6 +56,8 @@ static volatile uint8_t statusRPM = 0;
 static const nrf_drv_timer_t m_timer_PWM1 = NRF_DRV_TIMER_INSTANCE(1);
 static const nrf_drv_timer_t m_timer_PWM2 = NRF_DRV_TIMER_INSTANCE(2);
 static const nrf_drv_timer_t m_timer_RPM = NRF_DRV_TIMER_INSTANCE(3);
+
+//static char message[200] = {""};
 
 void vTask_HwMeasure( void *pvParameters )
 {
@@ -87,7 +91,12 @@ void vTask_HwMeasure( void *pvParameters )
             case HW_MEASURE_TACT:
             {
                 //NRF_LOG_INFO("HW_MEASURE_TACT");
-
+                SendMessageNUS("*** HW_MEASURE_TACT ***");
+                NRF_LOG_INFO("*** HW_MEASURE_TACT ***");
+                NRF_LOG_INFO("nrf_drv_clock_hfclk_is_running: value = %d", (int)nrf_drv_clock_hfclk_is_running());
+                NRF_LOG_INFO("nrf_drv_clock_hfclk_is_running: value = %d", (int)nrf_drv_clock_hfclk_is_running());
+                               
+                
                 // Get temperature and system voltage values
                 int32_t i = 0;
                 for (i = 0; i < (SAMPLES_IN_BUFFER / 2); i++)
@@ -95,7 +104,7 @@ void vTask_HwMeasure( void *pvParameters )
                     nrf_drv_saadc_sample();
                     vTaskDelay(1);
                 }
-
+                
                 if (statusADC == 1)
                 {
                     int16_t valueTemperature_ADC = 0;
@@ -112,10 +121,13 @@ void vTask_HwMeasure( void *pvParameters )
                     float temperature_C = 0.0f;
                     float systemVoltage = 0.0f;
                     
-                    temperature_C = ((valueTemperature_ADC * ((0.6f * 6.0f) / 4096.0f)) - 1.24f) / 0.005f;
+                    temperature_C = ((valueTemperature_ADC * ((ADC_VREF * ADC_GAIN) / ADC_COUNT)) - AD8495_VREF) / AD8495_RATIO;
                     temperature_F = temperature_C * 1.8f + 32.0f;
-                    systemVoltage = valueSystemVoltage_ADC * ((0.6f * 6.0f) / 4096.0f);
+                    systemVoltage = valueSystemVoltage_ADC * ((ADC_VREF * ADC_GAIN) / ADC_COUNT);
                     
+                    SendMessageNUS("temperature = %.1f C", temperature_C);
+                    SendMessageNUS("temperature = %.1f F", temperature_F);
+                    SendMessageNUS("system voltage = %.1f V", systemVoltage);
                     NRF_LOG_INFO("temperature = "NRF_LOG_FLOAT_MARKER" C", NRF_LOG_FLOAT(temperature_C));
                     NRF_LOG_INFO("temperature = "NRF_LOG_FLOAT_MARKER" F", NRF_LOG_FLOAT(temperature_F));
                     NRF_LOG_INFO("system voltage = "NRF_LOG_FLOAT_MARKER" V", NRF_LOG_FLOAT(systemVoltage));
@@ -123,6 +135,8 @@ void vTask_HwMeasure( void *pvParameters )
                 }
                 else
                 {
+                    SendMessageNUS("temperature = NaN");
+                    SendMessageNUS("system voltage = NaN");
                     NRF_LOG_INFO("temperature = NaN");
                     NRF_LOG_INFO("system voltage = NaN");
                 }
@@ -130,22 +144,26 @@ void vTask_HwMeasure( void *pvParameters )
                 // Get PWM1 value
                 if (statusPWM1 == 1)
                 {
-                    NRF_LOG_INFO("pwm1 = "NRF_LOG_FLOAT_MARKER" us", NRF_LOG_FLOAT((float)valuePWM1 / 15.72f));
+                    SendMessageNUS("pwm1 = %.1f us", (float)valuePWM1 / TIMER_CLOCK);
+                    NRF_LOG_INFO("pwm1 = "NRF_LOG_FLOAT_MARKER" us", NRF_LOG_FLOAT((float)valuePWM1 / TIMER_CLOCK));
                     statusPWM1 = 0;
                 }
                 else
                 {
+                    SendMessageNUS("pwm1 = NaN");
                     NRF_LOG_INFO("pwm1 = NaN");
                 }
                 
                 // Get PWM2 value
                 if (statusPWM2 == 1)
                 {
-                    NRF_LOG_INFO("pwm2 = "NRF_LOG_FLOAT_MARKER" us", NRF_LOG_FLOAT((float)valuePWM2 / 15.72f));
+                    SendMessageNUS("pwm2 = %.2f us", (float)valuePWM2 / TIMER_CLOCK);
+                    NRF_LOG_INFO("pwm2 = "NRF_LOG_FLOAT_MARKER" us", NRF_LOG_FLOAT((float)valuePWM2 / TIMER_CLOCK));
                     statusPWM2 = 0;
                 }
                 else
                 {
+                    SendMessageNUS("pwm2 = NaN");
                     NRF_LOG_INFO("pwm2 = NaN");
                 }
                 
@@ -154,11 +172,13 @@ void vTask_HwMeasure( void *pvParameters )
                 {
                     uint16_t valueRPM = 0;
                     valueRPM = nrf_drv_timer_capture_get(&m_timer_RPM, NRF_TIMER_CC_CHANNEL0);
-                    NRF_LOG_INFO("engine = "NRF_LOG_FLOAT_MARKER" rpm", NRF_LOG_FLOAT((15720000.0f / (float)valueRPM) * 2.0f));
+                    SendMessageNUS("engine = %.1f rpm", ((TIMER_CLOCK * 1000000.0f) / (float)valueRPM) * 2.0f);
+                    NRF_LOG_INFO("engine = "NRF_LOG_FLOAT_MARKER" rpm", NRF_LOG_FLOAT(((TIMER_CLOCK * 1000000.0f) / (float)valueRPM) * 2.0f));
                     statusRPM = 0;
                 }
                 else
                 {
+                    SendMessageNUS("engine = NaN rpm");
                     NRF_LOG_INFO("engine = NaN rpm");
                 }
                 
