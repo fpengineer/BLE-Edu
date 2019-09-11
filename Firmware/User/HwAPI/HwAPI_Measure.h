@@ -16,14 +16,14 @@
 
 #include "HwAPI.h"
 
-#define TEMPERATURE_ANALOG_IN       NRF_SAADC_INPUT_AIN2
-#define VOLTAGE_ANALOG_IN           NRF_SAADC_INPUT_AIN6
+#define TEMPERATURE_ANALOG_IN       NRF_SAADC_INPUT_AIN1
+#define VOLTAGE_ANALOG_IN           NRF_SAADC_INPUT_AIN2
 
-//#define TEMPERATURE_PIN             4
-//#define VOLTAGE_PIN                 30
-#define PWM1_PIN                    8
-#define PWM2_PIN                    0
-#define RPM_PIN                     7
+//#define TEMPERATURE_PIN             3       // P0.03 - AIN1
+//#define VOLTAGE_PIN                 4       // P0.04 - AIN2
+#define PWM1_PIN                    11      // P0.11
+#define PWM2_PIN                    7       // P0.07
+#define RPM_PIN                     16      // P0.16
 
 #define MEASURE_TACT_MS     5000
 

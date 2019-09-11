@@ -17,8 +17,8 @@
 
 
 // LED port/pin defines
-#define LED1_PIN    12
-#define LED2_PIN    12
+#define LED1_PIN    14      // P0.14
+#define LED2_PIN    15      // P0.15
 
 #define STATUS_LED_FLASH_SLOW		500 // delay in milliseconds
 #define STATUS_LED_FLASH_FAST		200 // delay in milliseconds

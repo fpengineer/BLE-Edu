@@ -305,10 +305,10 @@ static void InitMeasureHardware( void )
         __WFE();    // This sequence puts the system to sleep (SystemON) while waiting
     }
 
-    err_code = nrf_drv_saadc_channel_init(2, &channel_temperature_config);
+    err_code = nrf_drv_saadc_channel_init(1, &channel_temperature_config); // 1 mean - AIN1
     APP_ERROR_CHECK(err_code);
 
-    err_code = nrf_drv_saadc_channel_init(6, &channel_voltage_config);
+    err_code = nrf_drv_saadc_channel_init(2, &channel_voltage_config);  // 2 mean - AIN2
     APP_ERROR_CHECK(err_code);
 
     err_code = nrf_drv_saadc_buffer_convert(m_buffer_pool[0], SAMPLES_IN_BUFFER);
