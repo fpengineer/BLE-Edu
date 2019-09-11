@@ -88,7 +88,7 @@
 
 extern TaskHandle_t xTask_HwBoot;
 
-#define DEVICE_NAME                         "BLE_Edu"                               /**< Name of device. Will be included in the advertising data. */
+#define DEVICE_NAME                         "RPM Meter"                               /**< Name of device. Will be included in the advertising data. */
 #define MANUFACTURER_NAME                   "MyCompanyLLC"                          /**< Manufacturer. Will be passed to Device Information Service. */
 #define NUS_SERVICE_UUID_TYPE           BLE_UUID_TYPE_VENDOR_BEGIN                  /**< UUID type for the Nordic UART Service (vendor specific). */
 
@@ -304,7 +304,7 @@ void SendMessageNUS(const char *message, ...)
 
 /**@brief Function for initializing services that will be used by the application.
  *
- * @details Initialize the Heart Rate, Battery and Device Information services.
+ * @details Initialize the BLE services.
  */
 static void services_init(void)
 {
