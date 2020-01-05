@@ -172,8 +172,8 @@ void vTask_HwMeasure( void *pvParameters )
                 {
                     uint16_t valueRPM = 0;
                     valueRPM = nrf_drv_timer_capture_get(&m_timer_RPM, NRF_TIMER_CC_CHANNEL0);
-                    SendMessageNUS("engine = %.1f rpm", ((TIMER_CLOCK * 1000000.0f) / (float)valueRPM) * 2.0f);
-                    NRF_LOG_INFO("engine = "NRF_LOG_FLOAT_MARKER" rpm", NRF_LOG_FLOAT(((TIMER_CLOCK * 1000000.0f) / (float)valueRPM) * 2.0f));
+                    SendMessageNUS("engine = %.1f rpm", (((TIMER_CLOCK * 1000000.0f) / (float)valueRPM) * 2.0f) * 60.0f);
+                    NRF_LOG_INFO("engine = "NRF_LOG_FLOAT_MARKER" rpm", NRF_LOG_FLOAT((((TIMER_CLOCK * 1000000.0f) / (float)valueRPM) * 2.0f) * 60.0f));
                     statusRPM = 0;
                 }
                 else
