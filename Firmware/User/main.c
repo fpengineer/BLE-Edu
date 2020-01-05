@@ -760,7 +760,8 @@ int main(void)
     // The task will run advertising_start() before entering its loop.
     nrf_sdh_freertos_init(advertising_start, &erase_bonds);
 
-    NRF_LOG_INFO("BLE_Edu project started.");
+    NRF_LOG_INFO("RPM Meter project started.");
+    SendMessageNUS("RPM Meter project started.");
     // Start FreeRTOS scheduler.
     vTaskStartScheduler();
 
