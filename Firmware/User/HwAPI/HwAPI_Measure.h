@@ -16,6 +16,9 @@
 
 #include "HwAPI.h"
 
+// Uncomment next line to enable module logging
+#define MEASURE_LOG_ENABLE
+
 #define TEMPERATURE_ANALOG_IN       NRF_SAADC_INPUT_AIN1
 #define VOLTAGE_ANALOG_IN           NRF_SAADC_INPUT_AIN2
 
@@ -63,5 +66,5 @@ HwAPI_Status_t HwAPI_Measure_Stop( void );
 void vTask_HwMeasure( void *pvParameters );
 HwAPI_BootStatus_t HwAPI_Measure_Run( void );
 
-#endif /* _HWAPI_DAQ_ADC_H_*/
+#endif /* _HWAPI_MEASURE_H_*/
 /* End of file */

@@ -62,9 +62,17 @@ static const nrf_drv_timer_t m_timer_RPM = NRF_DRV_TIMER_INSTANCE(3);
 void vTask_HwMeasure( void *pvParameters )
 {
     HwMeasureQueueData_t hwMeasureQueueData;
-    
-    NRF_LOG_INFO("HwMeasure: thread started");
 
+    float temperature_F = 0.0f;
+    float temperature_C = 0.0f;
+    float systemVoltage_V = 0.0f;
+    float pwm1_us = 0.0f;
+    float pwm2_us = 0.0f;
+    float engine_rpm = 0.0f;
+  
+#ifdef MEASURE_LOG_ENABLE
+    NRF_LOG_INFO("HwMeasure: thread started");
+#endif
     for (int32_t i = 0; i < SAMPLES_IN_BUFFER; i++)
     {
         bufferADC[i] = 0;
@@ -91,11 +99,12 @@ void vTask_HwMeasure( void *pvParameters )
             case HW_MEASURE_TACT:
             {
                 //NRF_LOG_INFO("HW_MEASURE_TACT");
+#ifdef MEASURE_LOG_ENABLE
                 SendMessageNUS("*** HW_MEASURE_TACT ***");
                 NRF_LOG_INFO("*** HW_MEASURE_TACT ***");
                 NRF_LOG_INFO("nrf_drv_clock_hfclk_is_running: value = %d", (int)nrf_drv_clock_hfclk_is_running());
                 NRF_LOG_INFO("nrf_drv_clock_hfclk_is_running: value = %d", (int)nrf_drv_clock_hfclk_is_running());
-                               
+#endif                               
                 
                 // Get temperature and system voltage values
                 int32_t i = 0;
@@ -117,54 +126,65 @@ void vTask_HwMeasure( void *pvParameters )
                     valueTemperature_ADC /= (SAMPLES_IN_BUFFER / 2);
                     valueSystemVoltage_ADC /= (SAMPLES_IN_BUFFER / 2);
 
-                    float temperature_F = 0.0f;
-                    float temperature_C = 0.0f;
-                    float systemVoltage = 0.0f;
                     
                     temperature_C = ((valueTemperature_ADC * ((ADC_VREF * ADC_GAIN) / ADC_COUNT)) - AD8495_VREF) / AD8495_RATIO;
                     temperature_F = temperature_C * 1.8f + 32.0f;
-                    systemVoltage = valueSystemVoltage_ADC * ((ADC_VREF * ADC_GAIN) / ADC_COUNT);
+                    systemVoltage_V = valueSystemVoltage_ADC * ((ADC_VREF * ADC_GAIN) / ADC_COUNT);
                     
+#ifdef MEASURE_LOG_ENABLE
                     SendMessageNUS("temperature = %.1f C", temperature_C);
                     SendMessageNUS("temperature = %.1f F", temperature_F);
-                    SendMessageNUS("system voltage = %.1f V", systemVoltage);
+                    SendMessageNUS("system voltage = %.1f V", systemVoltage_V);
                     NRF_LOG_INFO("temperature = "NRF_LOG_FLOAT_MARKER" C", NRF_LOG_FLOAT(temperature_C));
                     NRF_LOG_INFO("temperature = "NRF_LOG_FLOAT_MARKER" F", NRF_LOG_FLOAT(temperature_F));
-                    NRF_LOG_INFO("system voltage = "NRF_LOG_FLOAT_MARKER" V", NRF_LOG_FLOAT(systemVoltage));
+                    NRF_LOG_INFO("system voltage = "NRF_LOG_FLOAT_MARKER" V", NRF_LOG_FLOAT(systemVoltage_V));
+#endif
                     statusADC = 0;
                 }
                 else
                 {
+#ifdef MEASURE_LOG_ENABLE
                     SendMessageNUS("temperature = NaN");
                     SendMessageNUS("system voltage = NaN");
                     NRF_LOG_INFO("temperature = NaN");
                     NRF_LOG_INFO("system voltage = NaN");
+#endif
                 }
                 
                 // Get PWM1 value
                 if (statusPWM1 == 1)
                 {
-                    SendMessageNUS("pwm1 = %.1f us", (float)valuePWM1 / TIMER_CLOCK);
-                    NRF_LOG_INFO("pwm1 = "NRF_LOG_FLOAT_MARKER" us", NRF_LOG_FLOAT((float)valuePWM1 / TIMER_CLOCK));
-                    statusPWM1 = 0;
+                    pwm1_us = (float)valuePWM1 / TIMER_CLOCK;
+#ifdef MEASURE_LOG_ENABLE
+                    SendMessageNUS("pwm1 = %.1f us", pwm1_us);
+                    NRF_LOG_INFO("pwm1 = "NRF_LOG_FLOAT_MARKER" us", NRF_LOG_FLOAT(pwm1_us));
+#endif
+                  statusPWM1 = 0;
                 }
                 else
                 {
+#ifdef MEASURE_LOG_ENABLE
                     SendMessageNUS("pwm1 = NaN");
                     NRF_LOG_INFO("pwm1 = NaN");
+#endif
                 }
                 
                 // Get PWM2 value
                 if (statusPWM2 == 1)
                 {
-                    SendMessageNUS("pwm2 = %.2f us", (float)valuePWM2 / TIMER_CLOCK);
-                    NRF_LOG_INFO("pwm2 = "NRF_LOG_FLOAT_MARKER" us", NRF_LOG_FLOAT((float)valuePWM2 / TIMER_CLOCK));
+                    pwm2_us = (float)valuePWM2 / TIMER_CLOCK;
+#ifdef MEASURE_LOG_ENABLE
+                    SendMessageNUS("pwm2 = %.2f us", pwm2_us);
+                    NRF_LOG_INFO("pwm2 = "NRF_LOG_FLOAT_MARKER" us", NRF_LOG_FLOAT(pwm2_us));
+#endif
                     statusPWM2 = 0;
                 }
                 else
                 {
+#ifdef MEASURE_LOG_ENABLE
                     SendMessageNUS("pwm2 = NaN");
                     NRF_LOG_INFO("pwm2 = NaN");
+#endif
                 }
                 
                 // Get RPM value
@@ -172,14 +192,20 @@ void vTask_HwMeasure( void *pvParameters )
                 {
                     uint16_t valueRPM = 0;
                     valueRPM = nrf_drv_timer_capture_get(&m_timer_RPM, NRF_TIMER_CC_CHANNEL0);
-                    SendMessageNUS("engine = %.1f rpm", (((TIMER_CLOCK * 1000000.0f) / (float)valueRPM) * 2.0f) * 60.0f);
-                    NRF_LOG_INFO("engine = "NRF_LOG_FLOAT_MARKER" rpm", NRF_LOG_FLOAT((((TIMER_CLOCK * 1000000.0f) / (float)valueRPM) * 2.0f) * 60.0f));
+                    engine_rpm = (((TIMER_CLOCK * 1000000.0f) / (float)valueRPM) * 2.0f) * 60.0f;
+
+#ifdef MEASURE_LOG_ENABLE
+                    SendMessageNUS("engine = %.1f rpm", engine_rpm);
+                    NRF_LOG_INFO("engine = "NRF_LOG_FLOAT_MARKER" rpm", NRF_LOG_FLOAT(engine_rpm));
+#endif
                     statusRPM = 0;
                 }
                 else
                 {
+#ifdef MEASURE_LOG_ENABLE
                     SendMessageNUS("engine = NaN rpm");
                     NRF_LOG_INFO("engine = NaN rpm");
+#endif
                 }
                 
                 hwMeasureQueueData.stateHwMeasure = HW_MEASURE_TACT;            
