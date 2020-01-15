@@ -1,1 +1,1 @@
-BLE Education project using NRF52
+RPM project based on NRF52
