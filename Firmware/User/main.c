@@ -58,6 +58,7 @@
 #include "ble_advdata.h"
 #include "ble_advertising.h"
 #include "ble_nus.h"
+#include "ble_cus.h"
 #include "ble_dis.h"
 #include "ble_conn_params.h"
 #include "sensorsim.h"
@@ -123,6 +124,7 @@ extern TaskHandle_t xTask_HwBoot;
 #define UART_TX_BUF_SIZE                256                                         /**< UART TX buffer size. */
 #define UART_RX_BUF_SIZE                256                                         /**< UART RX buffer size. */
 
+BLE_CUS_DEF(m_cus);
 BLE_NUS_DEF(m_nus, NRF_SDH_BLE_TOTAL_LINK_COUNT);                                   /**< BLE NUS service instance. */
 NRF_BLE_GATT_DEF(m_gatt);                                           /**< GATT module instance. */
 NRF_BLE_QWR_DEF(m_qwr);                                             /**< Context for the Queued Write module.*/
@@ -134,6 +136,7 @@ static uint16_t m_conn_handle         = BLE_CONN_HANDLE_INVALID;    /**< Handle 
 
 static ble_uuid_t m_adv_uuids[] =                                   /**< Universally unique service identifiers. */
 {
+    {CUSTOM_SERVICE_UUID, BLE_UUID_TYPE_BLE/*BLE_UUID_TYPE_VENDOR_BEGIN*/},
     {BLE_UUID_NUS_SERVICE, BLE_UUID_TYPE_BLE},
     {BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE}
 };
@@ -309,6 +312,7 @@ void SendMessageNUS(const char *message, ...)
 static void services_init(void)
 {
     ret_code_t         err_code;
+    ble_cus_init_t     cus_init;
     ble_nus_init_t     nus_init;
     ble_dis_init_t     dis_init;
     nrf_ble_qwr_init_t qwr_init = {0};
@@ -319,6 +323,12 @@ static void services_init(void)
     err_code = nrf_ble_qwr_init(&m_qwr, &qwr_init);
     APP_ERROR_CHECK(err_code);
 
+    // Initialize CUS Service init structure to zero.
+    memset(&cus_init, 0, sizeof(cus_init));
+	
+    err_code = ble_cus_init(&m_cus, &cus_init);
+    APP_ERROR_CHECK(err_code);
+    
     // Initialize Nordic UART Service.
     memset(&nus_init, 0, sizeof(nus_init));
 
@@ -587,11 +597,12 @@ static void advertising_init(void)
     init.advdata.flags                   = BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
     init.advdata.uuids_complete.uuid_cnt = sizeof(m_adv_uuids) / sizeof(m_adv_uuids[0]);
     init.advdata.uuids_complete.p_uuids  = m_adv_uuids;
+    //init.advdata.short_name_len          = 3;
 
     init.config.ble_adv_fast_enabled  = true;
     init.config.ble_adv_fast_interval = APP_ADV_INTERVAL;
     init.config.ble_adv_fast_timeout  = APP_ADV_DURATION;
-
+    
     init.evt_handler = on_adv_evt;
 
     err_code = ble_advertising_init(&m_advertising, &init);
@@ -751,8 +762,8 @@ int main(void)
     // Initialize modules.
     gap_params_init();
     gatt_init();
-    advertising_init();
     services_init();
+    advertising_init();
     conn_params_init();
     peer_manager_init();
 

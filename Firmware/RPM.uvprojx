@@ -298,7 +298,7 @@
               <OCR_RVCT9>
                 <Type>0</Type>
                 <StartAddress>0x200057b8</StartAddress>
-                <Size>0xa848</Size>
+                <Size>0xdde0</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -1003,6 +1003,13 @@
         </Group>
         <Group>
           <GroupName>bleServices</GroupName>
+          <Files>
+            <File>
+              <FileName>ble_cus.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\bleServices\ble_cus.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>::CMSIS</GroupName>
@@ -2008,6 +2015,13 @@
         </Group>
         <Group>
           <GroupName>bleServices</GroupName>
+          <Files>
+            <File>
+              <FileName>ble_cus.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\bleServices\ble_cus.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>::CMSIS</GroupName>
