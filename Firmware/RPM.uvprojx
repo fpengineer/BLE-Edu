@@ -1009,6 +1009,11 @@
               <FileType>1</FileType>
               <FilePath>.\User\bleServices\ble_cus.c</FilePath>
             </File>
+            <File>
+              <FileName>ble_leds.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\bleServices\ble_leds.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -2020,6 +2025,11 @@
               <FileName>ble_cus.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\bleServices\ble_cus.c</FilePath>
+            </File>
+            <File>
+              <FileName>ble_leds.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\bleServices\ble_leds.c</FilePath>
             </File>
           </Files>
         </Group>
