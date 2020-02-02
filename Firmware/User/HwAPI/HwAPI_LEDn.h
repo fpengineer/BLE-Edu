@@ -15,6 +15,9 @@
 
 #include "HwAPI.h"
 
+// Uncomment next line to enable module logging
+#define LED_LOG_ENABLE
+
 
 // LED port/pin defines
 #define LED1_PIN    14      // P0.14
@@ -22,6 +25,9 @@
 
 #define STATUS_LED_FLASH_SLOW		500 // delay in milliseconds
 #define STATUS_LED_FLASH_FAST		200 // delay in milliseconds
+
+#define LED_FLASH_SLOW		        STATUS_LED_FLASH_SLOW
+#define LED_FLASH_FAST		        STATUS_LED_FLASH_FAST
 
 
 /* Exported types ------------------------------------------------------------*/

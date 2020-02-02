@@ -40,8 +40,10 @@ void vTask_HwLED1( void *pvParameters )
     HwLEDQueueData_t hwLEDQueueData;
     TickType_t timeout = portMAX_DELAY;
     
-    NRF_LOG_INFO("HwLED1: thread started");
-
+#ifdef LED_LOG_ENABLE
+    NRF_LOG_INFO("thread started");
+#endif
+    
     hwLEDQueueData.stateHwLED = HW_LED_INIT;            
     xQueueSend( xQueue_HwLED1_Rx, &hwLEDQueueData, NULL ); 
     while ( 1 )
@@ -61,7 +63,9 @@ void vTask_HwLED1( void *pvParameters )
             {
                 nrf_gpio_pin_set( LED1_PIN );
                 timeout = portMAX_DELAY;
-                //NRF_LOG_INFO("HW_LED_ON complete");
+#ifdef LED_LOG_ENABLE
+                NRF_LOG_INFO("HW_LED_ON");
+#endif
                 break;
             }
             
@@ -69,7 +73,9 @@ void vTask_HwLED1( void *pvParameters )
             {
                 nrf_gpio_pin_clear( LED1_PIN );
                 timeout = portMAX_DELAY;
-                //NRF_LOG_INFO("HW_LED_OFF complete");
+#ifdef LED_LOG_ENABLE
+                NRF_LOG_INFO("HW_LED_OFF");
+#endif
                 break;
             }
             
@@ -77,8 +83,9 @@ void vTask_HwLED1( void *pvParameters )
             {
                 nrf_gpio_pin_toggle( LED1_PIN );
                 timeout = hwLEDQueueData.delay_ms;
-                //NRF_LOG_INFO("HW_LED_FLASH complete\n"\
-                //             "HwLED1 toggle");
+#ifdef LED_LOG_ENABLE
+                NRF_LOG_INFO("HW_LED_FLASH: %dms", hwLEDQueueData.delay_ms);
+#endif
                 break;
             }                
             case HW_LED_IDLE:
